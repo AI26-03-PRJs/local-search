@@ -1,3 +1,5 @@
+from env.utils import random_position
+import random
 
 class LocalSearchBase:
     def __init__(self, world):
@@ -16,24 +18,12 @@ class LocalSearchBase:
 
 
     def get_neighbor(self, state):
-        """
-        TODO: Implement the neighbor generation function.
-        
-        Generate a new valid state by applying a local change to the current state.
-        Ensure you include all the required operations mentioned in the project PDF
-        to support a dynamic search space.
-        
-        Returns:
-            neighbor_state (list of tuples): The newly generated valid state.
-        """
+        pass
     def initialize_state(self):
-        """
-        TODO: Generate a valid initial state.
-        
-        Create a starting configuration of sensors within the grid boundaries,
-        respecting the maximum sensor limits and obstacle placements.
-        
-        Returns:
-            initial_state (list of tuples): The starting coordinates of the sensors.
-        """
-        raise NotImplementedError("Students must implement this method.")
+        n_sensors = random.randint(1, self.world.max_sensors)
+        state = []
+        while len(state) < n_sensors:
+            pos = random_position(self.world)
+            if pos not in state:
+                state.append(pos)
+        return state
