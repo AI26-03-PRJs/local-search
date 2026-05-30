@@ -1,5 +1,6 @@
 from env.utils import random_position
 import random
+import copy
 
 class LocalSearchBase:
     def __init__(self, world):
@@ -18,7 +19,47 @@ class LocalSearchBase:
 
 
     def get_neighbor(self, state):
-        pass
+        if not state:
+            return self.add_sensor(state)
+        operations = ['remove','move']
+        if len(state) < self.world.max_sensors:
+            operations.append('add')
+
+        op = random.choice(operations)
+        if op == 'move':
+            return self.move_sensor(state)
+        elif op == 'remove':
+            return self.remove_sensor(state)
+        else:
+            return self.add_sensor(state)
+
+    def add_sensor(self,state):
+        new_state = copy.deepcopy(state)
+        pos = random_position(self.world)
+        while pos in new_state:
+            pos = random_position(self.world)
+        new_state.append(pos)
+        return new_state
+
+    def remove_sensor(self,state):
+        if not state:
+            return state
+        new_state = copy.deepcopy(state)
+        inx_pos = random.randint(0, len(new_state) - 1)
+        new_state.pop(inx_pos)
+        return new_state
+
+    def move_sensor(self,state):
+        if not state:
+            return state
+        new_state = copy.deepcopy(state)
+        idx_pos = random.randint(0, len(new_state) - 1)
+        pos = random_position(self.world)
+        while pos in new_state:
+            pos = random_position(self.world)
+        new_state[idx_pos] = pos
+        return new_state
+
     def initialize_state(self):
         n_sensors = random.randint(1, self.world.max_sensors)
         state = []
