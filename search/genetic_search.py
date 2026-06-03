@@ -1,54 +1,67 @@
+from search.local_search_base import LocalSearchBase
 import random
+import copy
 
-def GENETIC_ALGORITHM(population, fitness, max_generations=1000):
-    for generation in range(max_generations):
-        weights = WEIGHTED_BY(population, fitness)
-        population2 = []
-        for i in range(len(population)):
-            parent1, parent2 = WEIGHTED_RANDOM_CHOICES(population, weights, 2)
-            child = REPRODUCE(parent1, parent2)
-            if random.random() < 0.1:
-                child = MUTATE(child)
-            population2.append(child)
-        population = population2
-        best_fitness = max(fitness(ind) for ind in population)
-        if best_fitness == 28:
-            break
-    return max(population, key=fitness)
 
-def WEIGHTED_BY(population, fitness):
-    scores = [fitness(ind) for ind in population]
-    total = sum(scores)
-    if total == 0:
-        return [1/len(population)] * len(population)
-    return [s / total for s in scores]
+class GeneticAlgorithm(LocalSearchBase):
+    def run(self, initial_state, **kwargs):
+        population_size = kwargs.get('population_size', 50)
+        max_generations = kwargs.get('max_generations', 200)
+        mutation_probability = kwargs.get('mutation_probability', 0.1)
 
-def WEIGHTED_RANDOM_CHOICES(population, weights, k):
-    return random.choices(population, weights=weights, k=k)
+        population = [initial_state.copy()]
+        for _ in range(population_size - 1):
+            population.append(self.initialize_state())
 
-def REPRODUCE(parent1, parent2):
-    n = len(parent1)
-    c = random.randint(1, n - 1)
-    return parent1[:c] + parent2[c:]
+        best_individual = initial_state.copy()
+        best_cost = self.evaluate(best_individual)
+        evaluations = []
+        states_history = []
 
-def MUTATE(child):
-    idx = random.randint(0, len(child) - 1)
-    child = list(child)
-    child[idx] = random.randint(0, 7)
-    return child
+        for _ in range(max_generations):
+            fitness_scores = []
+            for individual in population:
+                cost = self.evaluate(individual)
+                fitness_scores.append(1.0 / (cost + 1))
 
-def queens_fitness(state):
+            for individual, fitness in zip(population, fitness_scores):
+                if fitness > 1.0 / (best_cost + 1):
+                    best_individual = individual.copy()
+                    best_cost = self.evaluate(best_individual)
 
-    attacks = 0
-    
-    for i in range(len(state)):
-        for j in range(i + 1, len(state)):
-            if state[i] == state[j] or abs(state[i] - state[j]) == abs(i - j):
-                attacks += 1
-    return 28 - attacks
+            total = sum(fitness_scores)
+            if total == 0:
+                weights = [1.0 / len(population)] * len(population)
+            else:
+                weights = [f / total for f in fitness_scores]
 
-population = [[random.randint(0, 7) for _ in range(8)] for _ in range(50)]
+            population2 = []
+            for _ in range(len(population)):
+                parent1, parent2 = random.choices(population, weights=weights, k=2)
+                child = self._crossover(parent1, parent2)
+                if random.random() < mutation_probability:
+                    child = self.get_neighbor(child)
+                population2.append(child)
+            population = population2
 
-best = GENETIC_ALGORITHM(population, queens_fitness)
-print("Best Solution:", best)
-print("Fitness:", queens_fitness(best))
+            evaluations.append(best_cost)
+            states_history.append(best_individual.copy())
+
+        return best_individual, best_cost, evaluations, states_history
+
+    def _crossover(self, parent1, parent2):
+        p1 = copy.deepcopy(parent1)
+        p2 = copy.deepcopy(parent2)
+        if not p1:
+            return p2[: self.world.max_sensors]
+        c = random.randint(1, len(p1))
+        child = p1[:c] + p2[c:]
+        seen = set()
+        unique = []
+        for pos in child:
+            if pos not in seen:
+                seen.add(pos)
+                unique.append(pos)
+        if len(unique) > self.world.max_sensors:
+            unique = random.sample(unique, self.world.max_sensors)
+        return unique
