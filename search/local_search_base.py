@@ -42,16 +42,12 @@ class LocalSearchBase:
         return new_state
 
     def remove_sensor(self,state):
-        if not state:
-            return state
         new_state = copy.deepcopy(state)
         inx_pos = random.randint(0, len(new_state) - 1)
         new_state.pop(inx_pos)
         return new_state
 
     def move_sensor(self,state):
-        if not state:
-            return state
         new_state = copy.deepcopy(state)
         idx_pos = random.randint(0, len(new_state) - 1)
         pos = random_position(self.world)
