@@ -30,8 +30,8 @@ class SimulatedAnnealing(LocalSearchBase):
         best_cost=current_cost
         temp=kwargs.get('initial_temp',100)
         min_temp=kwargs.get('min_temp',0.01)
-        d_rate=kwargs.get('d_rate',0.9)
-        iteration=kwargs.get('iteration',50)
+        d_rate=kwargs.get('d_rate',0.97)
+        iteration=kwargs.get('iteration',25)
 
         while temp > min_temp:
             for i in range (iteration):
