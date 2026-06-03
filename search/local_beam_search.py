@@ -47,4 +47,4 @@ class LocalBeamSearch(LocalSearchBase):
             if imp_counter >= patience:
                 break
 
-        return best_state, best_cost, evaluations, states_history
+        return (best_state, best_cost, evaluations, states_history)
