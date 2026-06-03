@@ -32,9 +32,14 @@ class SimulatedAnnealing(LocalSearchBase):
         min_temp=kwargs.get('min_temp',0.01)
         d_rate=kwargs.get('d_rate',0.97)
         iteration=kwargs.get('iteration',25)
+        max_iterations=kwargs.get('max_iterations',1000)
 
-        while temp > min_temp:
+        total_iterations=0
+
+        while temp > min_temp and total_iterations < max_iterations:
             for i in range (iteration):
+                if total_iterations >= max_iterations:
+                    break
                 neighbor=self.get_neighbor(current_state)
                 next_cost=self.evaluate(neighbor)
                 delta_E=current_cost - next_cost
@@ -50,6 +55,7 @@ class SimulatedAnnealing(LocalSearchBase):
                         current_cost=next_cost
                         evaluations.append(current_cost)
                         states_history.append(current_state)
+                total_iterations+=1
 
             if current_cost<best_cost:
                 best_state=current_state
